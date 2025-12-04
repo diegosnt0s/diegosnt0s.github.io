@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diego's Fruit Store</title>
+  
+</head>
+<body>
+    
+    <div>
+        <h1 id="greeting"></h1>
+        <p id="orderInfo"></p>
+        <p id="arrival"></p>
+    </div>
+
+  <script>
+   
+    alert("Welcome to Diego's Fruit store!");
+
+    // Get user information
+    let name = prompt("Please enter your name:");
+    let fruit = prompt("What fruit would you like to order?");
+    let quantity = prompt(`Quantity for ${fruit}? (1-99)`);
+
+    // Convert quantity to number
+    quantity = parseInt(quantity);
+
+    //time-based greeting
+    const now = new Date();
+    const hour = now.getHours();
+    let greetingText = "";
+
+    if (hour < 12) {
+      greetingText = "Good Morning";
+    } else if (hour < 18) {
+      greetingText = "Good Afternoon";
+    } else {
+      greetingText = "Good Evening";
+    }
+
+    // Greeting and order info
+    document.getElementById("greeting").innerHTML =
+      `${greetingText} ${name}, thank you for ordering!`;
+
+    document.getElementById("orderInfo").innerHTML =
+      `You ordered ${quantity} ${fruit}.`;
+
+    // Calculate arrival date 
+    let arrivalDate = new Date();
+    arrivalDate.setDate(now.getDate() + 7);
+
+    
+    let options = { year: 'numeric', month: 'long', day: 'numeric' };
+    let formattedDate = arrivalDate.toLocaleDateString(undefined, options);
+
+    document.getElementById("arrival").innerHTML =
+      `Your order will arrive on ${formattedDate}.`;
+  </script>
+
+   
+
+</body>
+</html>
