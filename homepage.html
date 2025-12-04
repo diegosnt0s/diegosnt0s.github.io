@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amiibo Finder</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">Amiibo Finder</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-3">All Amiibos</h2>
+
+    <div class="d-flex justify-content-end mb-3">
+        <div id="pagination"></div>
+    </div>
+
+    <input id="searchInput" type="text" class="form-control mb-3" placeholder="Search by character...">
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <select id="typeFilter" class="form-control">
+                <option value="">All Types</option>
+                <option value="Figure">Figure</option>
+                <option value="Card">Card</option>
+                <option value="Band">Band</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <input id="gameSeriesFilter" type="text" class="form-control" placeholder="Filter by Game Series">
+        </div>
+
+        <div class="col-md-3">
+            <input id="headFilter" type="text" class="form-control" placeholder="Head ID (optional)">
+        </div>
+
+        <div class="col-md-3">
+            <input id="tailFilter" type="text" class="form-control" placeholder="Tail ID (optional)">
+        </div>
+    </div>
+
+    <!-- Apply Filters Button -->
+    <button class="btn btn-primary mb-4" onclick="currentPage = 1; applyFilters()">Apply Filters</button>
+
+    <div id="amiiboList" class="row"></div>
+</div>
+
+<script>
+    const amiiboList = document.getElementById("amiiboList");
+    const searchInput = document.getElementById("searchInput");
+    const typeFilter = document.getElementById("typeFilter");
+    const gameSeriesFilter = document.getElementById("gameSeriesFilter");
+    const headFilter = document.getElementById("headFilter");
+    const tailFilter = document.getElementById("tailFilter");
+
+    let allAmiibo = [];
+    let currentPage = 1;
+    const itemsPerPage = 60;
+
+    // Fetch all Amiibo
+    fetch("https://www.amiiboapi.com/api/amiibo/")
+        .then(r => r.json())
+        .then(data => {
+            allAmiibo = data.amiibo;
+            applyFilters();
+        })
+        .catch(() => {
+            amiiboList.innerHTML = "<p class='text-danger'>Error loading Amiibo data.</p>";
+        });
+
+    function displayAmiibo(list) {
+        amiiboList.innerHTML = "";
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageItems = list.slice(start, end);
+
+        pageItems.forEach(item => {
+            amiiboList.innerHTML += `
+                <div class="col-md-3 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="${item.image}" loading="lazy" class="card-img-top">
+                        <div class="card-body">
+                            <h5 class="card-title">${item.name}</h5>
+                            <a href="details.html?id=${item.head}${item.tail}" class="btn btn-primary btn-sm">View Details</a>
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function createPagination(totalItems) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            pagination.innerHTML += `
+                <button class="btn btn-outline-primary mx-1 ${i === currentPage ? "active" : ""}"
+                        onclick="goToPage(${i})">
+                    ${i}
+                </button>
+            `;
+        }
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        applyFilters();
+    }
+
+    function applyFilters() {
+        let filtered = allAmiibo;
+
+        const searchValue = searchInput.value.toLowerCase();
+        const typeValue = typeFilter.value;
+        const gameSeriesValue = gameSeriesFilter.value.toLowerCase();
+        const headValue = headFilter.value.trim();
+        const tailValue = tailFilter.value.trim();
+
+        filtered = filtered.filter(a =>
+            a.name.toLowerCase().includes(searchValue) ||
+            a.character.toLowerCase().includes(searchValue)
+        );
+
+        if (typeValue) filtered = filtered.filter(a => a.type === typeValue);
+
+        if (gameSeriesValue)
+            filtered = filtered.filter(a =>
+                a.gameSeries.toLowerCase().includes(gameSeriesValue)
+            );
+
+        if (headValue) filtered = filtered.filter(a => a.head === headValue);
+        if (tailValue) filtered = filtered.filter(a => a.tail === tailValue);
+
+        displayAmiibo(filtered);
+        createPagination(filtered.length);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amiibo Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">Amiibo Browser</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-4">Amiibo Details</h2>
+
+    <div id="details" class="card p-3 shadow-sm"></div>
+</div>
+
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    const detailsDiv = document.getElementById("details");
+
+    if (!id) {
+        detailsDiv.innerHTML = "<p class='text-danger'>Invalid Amiibo ID.</p>";
+    } else {
+        fetch(`https://www.amiiboapi.com/api/amiibo/?id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.amiibo) {
+                    detailsDiv.innerHTML = "<p class='text-danger'>No Amiibo found.</p>";
+                    return;
+                }
+
+                const a = data.amiibo;
+                detailsDiv.innerHTML = `
+                    <img src="${a.image}" class="img-fluid mb-3" style="max-width:200px" loading="lazy">
+                    <h4>${a.character}</h4>
+                    <p><strong>Game Series:</strong> ${a.gameSeries}</p>
+                    <p><b>Amiibo Series:</b> ${a.amiiboSeries}</p>
+                    <h5>Release Dates</h5>
+                            <ul>
+                               <!-- N/A is if date is null -->
+                            <li><b>North America:</b> ${a.release.na || "N/A"}</li>
+                            <li><b>Europe:</b> ${a.release.eu || "N/A"}</li>
+                            <li><b>Japan:</b> ${a.release.jp || "N/A"}</li>
+                            <li><b>Australia:</b> ${a.release.au || "N/A"}</li>
+                            </ul>
+                    <p><b>Type:</b> ${a.type}</p>
+                    <a href="homepage.html" class="btn btn-secondary mt-3">HomePage</a>
+                `;
+            })
+            .catch(() => {
+                detailsDiv.innerHTML = "<p class='text-danger'>Error loading Amiibo details.</p>";
+            });
+    }
+</script>
+
+
+</body>
+</html>
+
